@@ -6,14 +6,14 @@ import google.generativeai as genai
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('models/gemini-1.5-pro')
 except:
     st.error("API 키 설정이 필요합니다. Streamlit Settings > Secrets에 GOOGLE_API_KEY를 입력해주세요.")
 
 # 웹사이트 화면 구성
 st.set_page_config(page_title="중부상사 비즈니스 인텔리전스", layout="wide")
 st.title("🍷 중부상사 실시간 뉴스 모니터링 & 분석")
-st.sidebar.info("중부상사(대표 이석홍)의 사업적 기회와 리스크를 AI가 분석합니다.")
+st.sidebar.info("중부상사의 사업적 기회와 리스크를 AI가 분석합니다.")
 
 # 뉴스 수집 함수
 def get_news(keyword):
@@ -23,7 +23,7 @@ def get_news(keyword):
 
 # 실행 버튼
 if st.button('🚀 최신 뉴스 분석하기'):
-    keywords = ["주류도매", "주세법 개정", "이석홍 회장"]
+    keywords = ["주류도매", "주세법 개정", "소주", "맥주", "위스키", "와인", "주점", "주류"]
     
     for kw in keywords:
         st.subheader(f"🔍 키워드: {kw}")
