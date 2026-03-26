@@ -6,7 +6,7 @@ import google.generativeai as genai
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
-    model = genai.GenerativeModel('models/gemini-1.5-pro')
+    models/ = genai.GenerativeModel('models/gemini-1.5-pro')
 except:
     st.error("API 키 설정이 필요합니다. Streamlit Settings > Secrets에 GOOGLE_API_KEY를 입력해주세요.")
 
