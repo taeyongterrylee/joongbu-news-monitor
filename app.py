@@ -2,18 +2,22 @@ import streamlit as st
 import feedparser
 import google.generativeai as genai
 
-# 1. 보안 설정 (Streamlit Cloud의 Secrets에서 키를 가져옵니다)
-try:
-    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=GOOGLE_API_KEY)
-    models = genai.GenerativeModel('models/gemini-1.5-pro')
-except:
-    st.error("API 키 설정이 필요합니다. Streamlit Settings > Secrets에 GOOGLE_API_KEY를 입력해주세요.")
+# 웹사이트 상단 설정
+st.set_page_config(page_title="중부상사 비즈니스 모니터링", layout="wide")
+st.title("🍷 중부상사 실시간 뉴스 분석기")
 
-# 웹사이트 화면 구성
-st.set_page_config(page_title="중부상사 비즈니스 인텔리전스", layout="wide")
-st.title("🍷 중부상사 실시간 뉴스 모니터링 & 분석")
-st.sidebar.info("중부상사의 사업적 기회와 리스크를 AI가 분석합니다.")
+# 1. API 키 설정 (보안 방식)
+# 만약 Secrets 설정이 어려우시면 아래 따옴표 안에 직접 키를 넣으셔도 됩니다.
+# 예: API_KEY = "AIza..."
+API_KEY = st.secrets.get("GOOGLE_API_KEY", "여기에_직접_키를_넣으셔도_됩니다")
+
+if not API_KEY or API_KEY == "여기에_직접_키를_넣으셔도_됩니다":
+    st.error("⚠️ API 키가 설정되지 않았습니다. Streamlit Secrets에 키를 넣거나 코드에 직접 입력해주세요.")
+    st.stop()
+
+# 2. AI 모델 초기화 (에러 방지를 위해 전역 설정)
+genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 뉴스 수집 함수
 def get_news(keyword):
