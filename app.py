@@ -19,7 +19,7 @@ if not API_KEY:
 # 3. AI 모델 초기화
 try:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.5-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 except Exception as e:
     st.error(f"모델 초기화 실패: {e}")
     st.stop()
