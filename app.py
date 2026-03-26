@@ -1,23 +1,28 @@
+
+
 import streamlit as st
 import feedparser
 import google.generativeai as genai
 
-# 웹사이트 상단 설정
+# 1. 페이지 설정
 st.set_page_config(page_title="중부상사 비즈니스 모니터링", layout="wide")
 st.title("🍷 중부상사 실시간 뉴스 분석기")
 
-# 1. API 키 설정 (보안 방식)
-# 만약 Secrets 설정이 어려우시면 아래 따옴표 안에 직접 키를 넣으셔도 됩니다.
-# 예: API_KEY = "AIza..."
-API_KEY = st.secrets.get("GOOGLE_API_KEY", "여기에_직접_키를_넣으셔도_됩니다")
+# 2. API 키 가져오기 (Secrets 우선, 없으면 직접 입력)
+API_KEY = st.secrets.get("GOOGLE_API_KEY", "")
 
-if not API_KEY or API_KEY == "여기에_직접_키를_넣으셔도_됩니다":
-    st.error("⚠️ API 키가 설정되지 않았습니다. Streamlit Secrets에 키를 넣거나 코드에 직접 입력해주세요.")
+if not API_KEY:
+    st.error("⚠️ API 키가 설정되지 않았습니다. Streamlit Secrets에 GOOGLE_API_KEY를 넣어주세요.")
     st.stop()
 
-# 2. AI 모델 초기화 (에러 방지를 위해 전역 설정)
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# 3. AI 모델 초기화 (가장 보수적이고 안전한 이름 사용)
+try:
+    genai.configure(api_key=API_KEY)
+    # 'models/'를 붙이는 것이 최신 표준입니다.
+    model = genai.GenerativeModel('models/gemini-1.5-flash')
+except Exception as e:
+    st.error(f"모델 초기화 실패: {e}")
+    st.stop()
 
 # 뉴스 수집 함수
 def get_news(keyword):
@@ -26,26 +31,30 @@ def get_news(keyword):
     return feed.entries[:5]
 
 # 실행 버튼
-if st.button('🚀 최신 뉴스 분석하기'):
+if st.button('🚀 최신 뉴스 분석 시작'):
     keywords = ["주류도매", "주세법 개정", "소주", "맥주", "위스키", "와인", "주점", "주류"]
     
-    for kw in keywords:
-        st.subheader(f"🔍 키워드: {kw}")
-        news_items = get_news(kw)
-        
-        for item in news_items:
-            with st.expander(f"📌 {item.title}"):
-                st.write(f"[기사 원문 보기]({item.link})")
-                
-                # AI 분석 요청
-                prompt = f"""
-                당신은 종합주류도매업체 '중부상사'의 전략가입니다.
-                다음 뉴스가 중부상사의 사업에 줄 영향을 분석하세요.
-                뉴스 제목: {item.title}
-                
-                1. 기회 요인:
-                2. 리스크 요소:
-                3. 권장 대응 방향:
-                """
-                response = model.generate_content(prompt)
-                st.info(response.text)
+    with st.spinner('중부상사 관점에서 분석 중...'):
+        for kw in keywords:
+            st.markdown(f"### 🔍 키워드: **{kw}**")
+            items = get_news(kw)
+            
+            if not items:
+                st.write("관련 뉴스가 없습니다.")
+                continue
+
+            for item in items:
+                with st.expander(f"📌 {item.title}"):
+                    st.write(f"[기사 원문 보기]({item.link})")
+                    
+                    # AI 분석 실행
+                    prompt = f"종합주류도매사 '중부상사'의 입장에서 다음 뉴스의 기회와 리스크를 요약해줘: {item.title}"
+                    
+                    try:
+                        # [핵심] 여기서 NotFound가 나지 않도록 모델을 다시 한번 확인합니다.
+                        response = model.generate_content(prompt)
+                        st.info(response.text)
+                    except Exception as e:
+                        # 에러가 나면 어떤 에러인지 정확히 화면에 표시합니다.
+                        st.warning(f"분석 일시 중단 (이유: {e})")
+
