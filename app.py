@@ -2,11 +2,12 @@ import streamlit as st
 import feedparser
 import google.generativeai as genai
 import urllib.parse
+import time
 
 # 1. 페이지 설정
 st.set_page_config(page_title="중부상사 비즈니스 모니터링", layout="wide")
 st.title("🍷 중부상사 실시간 뉴스 분석기")
-st.sidebar.info("중부상사(대표 이석홍) 맞춤형 주류 시장 인사이트")
+st.sidebar.info("중부상사 맞춤형 주류 시장 인사이트")
 
 # 2. API 키 가져오기
 API_KEY = st.secrets.get("GOOGLE_API_KEY", "")
@@ -59,16 +60,19 @@ if st.button('🚀 전 품목 실시간 뉴스 분석 시작'):
                         뉴스 제목: {item.title}
                         
                         출력 형식:
-                        1. 사업적 기회: (도매 매출 증대 방안 등)
-                        2. 리스크 요소: (규제, 경쟁, 원가 상승 등)
-                        3. 현장 대응 전략: (거래처 관리 및 영업 팁)
+                        1. 사업적 기회:
+                        2. 리스크 요소:
+                        3. 현장 대응 전략:
                         """
                         
                         try:
+                            # [핵심] 유료 계정이라도 API 호출 간격을 위해 1.2초 쉽니다.
+                            time.sleep(1.2) 
                             response = model.generate_content(prompt)
                             st.info(response.text)
                         except Exception as e:
-                            st.warning("분석 중 일시적인 오류가 발생했습니다.")
+                            # 에러 원인을 화면에 구체적으로 표시합니다.
+                            st.warning(f"분석 일시 중단 (원인: {e})")
             
             # 진행바 업데이트
             my_bar.progress((idx + 1) / len(keywords))
